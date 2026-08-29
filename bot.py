@@ -2138,14 +2138,20 @@ def format_parameters_line(state: dict[str, Any]) -> str:
 
 
 def format_game_text(game: dict[str, Any]) -> str:
+    how_to_play = "\n".join(
+        f"{i}. {step}" for i, step in enumerate(game["how_to_play"], 1)
+    )
+    english_toolkit = "\n".join(
+        f"• {item}" for item in game["english_toolkit"]
+    )
     text = f"""🎯 MISSION
 {game['mission']}
 
 🎮 HOW TO PLAY
-{"\n".join(f"{i}. {step}" for i, step in enumerate(game["how_to_play"], 1))}
+{how_to_play}
 
 💬 ENGLISH TOOLKIT
-{"\n".join(f"• {item}" for item in game["english_toolkit"])}
+{english_toolkit}
 
 🦊 FOX TWIST
 {game['fox_twist']}
