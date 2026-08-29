@@ -404,6 +404,18 @@ Optional: small reward / point tokens"""
         text = "\n".join(page.extract_text() or "" for page in PdfReader(path).pages)
         self.assertIn("Секретная охота", text)
 
+    def test_pdf_uses_bundled_cyrillic_regular_and_bold_fonts(self):
+        pdf_pack.register_pdf_fonts()
+        expected_fonts = (
+            (pdf_pack.FONT_REGULAR, pdf_pack.BUNDLED_FONT_REGULAR),
+            (pdf_pack.FONT_BOLD, pdf_pack.BUNDLED_FONT_BOLD),
+        )
+        for font_name, font_path in expected_fonts:
+            self.assertTrue(font_path.is_file())
+            font = pdf_pack.pdfmetrics.getFont(font_name)
+            self.assertEqual(Path(font.face.filename).resolve(), font_path.resolve())
+            self.assertTrue(all(ord(char) in font.face.charWidths for char in "Кириллица"))
+
     def _run_pdf_worker(self, cached=(), generate_side_effect=None, upload_error=None, build_error=None):
         game = json.loads(json.dumps(self.game))
         fingerprint = bot.game_fingerprint(game)

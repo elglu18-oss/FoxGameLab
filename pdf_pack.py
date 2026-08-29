@@ -16,6 +16,7 @@ from reportlab.pdfgen import canvas
 
 BASE_DIR = Path(__file__).resolve().parent
 GENERATED_DIR = BASE_DIR / "generated"
+FONT_DIR = BASE_DIR / "assets" / "fonts"
 
 NAVY = HexColor("#08265A")
 ORANGE = HexColor("#FF6A00")
@@ -30,6 +31,8 @@ SOFT_NAVY = HexColor("#E9EEF4")
 
 FONT_REGULAR = "FoxArial"
 FONT_BOLD = "FoxArialBold"
+BUNDLED_FONT_REGULAR = FONT_DIR / "DejaVuSans.ttf"
+BUNDLED_FONT_BOLD = FONT_DIR / "DejaVuSans-Bold.ttf"
 _FONTS_READY = False
 
 
@@ -37,23 +40,16 @@ def register_pdf_fonts() -> None:
     global _FONTS_READY
     if _FONTS_READY:
         return
-    candidates = [
-        (
-            Path("C:/Windows/Fonts/arial.ttf"),
-            Path("C:/Windows/Fonts/arialbd.ttf"),
-        ),
-        (
-            BASE_DIR / "assets" / "fonts" / "DejaVuSans.ttf",
-            BASE_DIR / "assets" / "fonts" / "DejaVuSans-Bold.ttf",
-        ),
+    missing = [
+        path.name
+        for path in (BUNDLED_FONT_REGULAR, BUNDLED_FONT_BOLD)
+        if not path.is_file()
     ]
-    for regular, bold in candidates:
-        if regular.is_file() and bold.is_file():
-            pdfmetrics.registerFont(TTFont(FONT_REGULAR, str(regular)))
-            pdfmetrics.registerFont(TTFont(FONT_BOLD, str(bold)))
-            _FONTS_READY = True
-            return
-    raise FileNotFoundError("No bundled or system TrueType font with Cyrillic support")
+    if missing:
+        raise FileNotFoundError(f"Bundled PDF fonts are missing: {', '.join(missing)}")
+    pdfmetrics.registerFont(TTFont(FONT_REGULAR, str(BUNDLED_FONT_REGULAR)))
+    pdfmetrics.registerFont(TTFont(FONT_BOLD, str(BUNDLED_FONT_BOLD)))
+    _FONTS_READY = True
 
 
 def pdf_safe_text(value: Any) -> str:
