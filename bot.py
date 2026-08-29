@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import random
 import re
@@ -2731,8 +2732,8 @@ def generate_and_deliver_pdf(
                 AI_TIMEOUT_REPLY,
                 keyboard=build_material_menu_keyboard(),
             )
-    except Exception as error:
-        print(f"[PDF ERROR] stage=build user_id={user_id} error={safe_error_detail(error)}")
+    except Exception:
+        logging.exception("[PDF ERROR] stage=build user_id=%s", user_id)
         if worker_vk is not None:
             send_message(
                 worker_vk,

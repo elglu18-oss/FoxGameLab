@@ -588,9 +588,14 @@ Optional: small reward / point tokens"""
         self.assertFalse(bot.USER_STATES[1]["processing"])
 
     def test_pdf_error_resets_processing(self):
-        vk, _, _, _, _ = self._run_pdf_worker(
-            cached=("cards", "worksheet", "pack"),
-            build_error=RuntimeError("build failed"),
+        with patch.object(bot.logging, "exception") as log_exception:
+            vk, _, _, _, _ = self._run_pdf_worker(
+                cached=("cards", "worksheet", "pack"),
+                build_error=RuntimeError("build failed"),
+            )
+        log_exception.assert_called_once_with(
+            "[PDF ERROR] stage=build user_id=%s",
+            1,
         )
         self.assertFalse(bot.USER_STATES[1]["processing"])
         self.assertEqual(vk.messages.send.call_args.kwargs["message"], bot.PDF_ERROR_REPLY)
